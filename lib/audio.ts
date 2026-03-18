@@ -1,0 +1,58 @@
+import * as musicMetadata from 'music-metadata'
+import { Segment } from './types'
+import { SCENES } from './constants'
+
+function seededRandom(seed: number): () => number {
+  return function() {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff
+    return seed / 0x7fffffff
+  }
+}
+
+export async function parseAudioDuration(filepath: string): Promise<number> {
+  const metadata = await musicMetadata.parseFile(filepath)
+  return metadata.format.duration || 0
+}
+
+export async function parseAudioBuffer(buffer: Buffer): Promise<number> {
+  const metadata = await musicMetadata.parseBuffer(buffer)
+  return metadata.format.duration || 0
+}
+
+export function buildSegments(duration: number, seed: number = 123): Segment[] {
+  const random = seededRandom(seed)
+  const segments: Segment[] = []
+  
+  let currentTime = 0
+  let sceneIndex = 0
+  
+  while (currentTime < duration && sceneIndex < SCENES.length) {
+    // Random duration between 1 and 4 seconds
+    const segmentDuration = 1 + random() * 3
+    const endTime = Math.min(currentTime + segmentDuration, duration)
+    const actualDuration = endTime - currentTime
+    
+    // Only add segment if it's at least 0.5 seconds
+    if (actualDuration >= 0.5) {
+      segments.push({
+        index: sceneIndex,
+        startTime: currentTime,
+        endTime: endTime,
+        duration: actualDuration,
+        scene: SCENES[sceneIndex % SCENES.length]
+      })
+      sceneIndex++
+    }
+    
+    currentTime = endTime
+  }
+  
+  return segments
+}
+
+export function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  const ms = Math.floor((seconds % 1) * 100)
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`
+}
