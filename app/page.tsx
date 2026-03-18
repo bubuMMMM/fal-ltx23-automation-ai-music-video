@@ -1,7 +1,7 @@
 // Dashboard page - lists all projects
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Plus, Video, Clock, CheckCircle2 } from 'lucide-react'
+import { Plus, Video, Clock, CheckCircle2, ImageIcon, Type } from 'lucide-react'
 import { listProjects } from '@/lib/storage'
 import { STEP_LABELS } from '@/lib/constants'
 
@@ -56,11 +56,28 @@ export default async function DashboardPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {project.id.slice(0, 8)}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {project.id.slice(0, 8)}
+                      </p>
+                      <span className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+                        {project.characterInputMode === 'image' ? (
+                          <>
+                            <ImageIcon className="h-3 w-3" />
+                            Image
+                          </>
+                        ) : (
+                          <>
+                            <Type className="h-3 w-3" />
+                            Prompt
+                          </>
+                        )}
+                      </span>
+                    </div>
                     <h3 className="mt-2 font-medium text-card-foreground line-clamp-2">
-                      {project.characterPrompt.slice(0, 60)}...
+                      {project.characterInputMode === 'image' 
+                        ? 'Custom character image'
+                        : `${project.characterPrompt.slice(0, 60)}...`}
                     </h3>
                   </div>
                   <StatusBadge status={project.status} />

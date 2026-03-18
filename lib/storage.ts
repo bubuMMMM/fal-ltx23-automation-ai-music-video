@@ -27,13 +27,14 @@ export async function initStorage() {
 }
 
 // Project operations
-export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'currentStep' | 'stepStatuses' | 'status' | 'characterImages' | 'selectedCharacter' | 'segments' | 'frameResults' | 'frameSelections' | 'videoResults' | 'videoSelections' | 'finalVideoPath' | 'finalVideoUrl'>): Promise<Project> {
+export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'currentStep' | 'stepStatuses' | 'status' | 'characterImages' | 'selectedCharacter' | 'segments' | 'frameResults' | 'frameSelections' | 'videoResults' | 'videoSelections' | 'finalVideoPath' | 'finalVideoUrl'> & { characterInputMode?: 'prompt' | 'image' }): Promise<Project> {
   await initStorage()
   
   const project: Project = {
     id: uuidv4(),
     createdAt: new Date().toISOString(),
     ...data,
+    characterInputMode: data.characterInputMode || 'prompt',
     currentStep: 1,
     stepStatuses: {
       1: 'pending',
@@ -164,6 +165,23 @@ export async function saveUploadedFile(file: File, projectId: string): Promise<s
   await ensureDir(projectUploadDir)
   
   const filename = `audio_${Date.now()}.mp3`
+  const filepath = path.join(projectUploadDir, filename)
+  
+  const buffer = Buffer.from(await file.arrayBuffer())
+  await fs.writeFile(filepath, buffer)
+  
+  return filepath
+}
+
+export async function saveCharacterImage(file: File, projectId: string): Promise<string> {
+  await initStorage()
+  
+  const projectUploadDir = path.join(UPLOADS_DIR, projectId)
+  await ensureDir(projectUploadDir)
+  
+  // Get file extension
+  const ext = file.name.split('.').pop() || 'png'
+  const filename = `character_${Date.now()}.${ext}`
   const filepath = path.join(projectUploadDir, filename)
   
   const buffer = Buffer.from(await file.arrayBuffer())

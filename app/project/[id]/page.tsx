@@ -14,7 +14,7 @@ import { Step5Videos } from '@/components/pipeline/step-5-videos'
 import { Step6SelectVideos } from '@/components/pipeline/step-6-select-videos'
 import { Step7Assemble } from '@/components/pipeline/step-7-assemble'
 import { Step8Done } from '@/components/pipeline/step-8-done'
-import { ArrowLeft, Key, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Key, Loader2, AlertCircle, ImageIcon, Type } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
@@ -153,6 +153,19 @@ export default function ProjectPage() {
           <div className="flex items-center gap-4">
             <span className="font-mono text-xs text-muted-foreground">
               {project.id.slice(0, 8)}
+            </span>
+            <span className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+              {project.characterInputMode === 'image' ? (
+                <>
+                  <ImageIcon className="h-3 w-3" />
+                  Image
+                </>
+              ) : (
+                <>
+                  <Type className="h-3 w-3" />
+                  Prompt
+                </>
+              )}
             </span>
             {serverHasFalKey && (
               <span className="flex items-center gap-1 text-xs text-green-500">

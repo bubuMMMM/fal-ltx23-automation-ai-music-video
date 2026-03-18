@@ -24,6 +24,8 @@ export interface VideoResult {
 
 export type StepStatus = 'pending' | 'running' | 'done' | 'error'
 
+export type CharacterInputMode = 'prompt' | 'image'
+
 export interface Project {
   id: string
   createdAt: string
@@ -32,6 +34,8 @@ export interface Project {
   audioDuration?: number
   characterPrompt: string
   characterStyle: string
+  characterInputMode: CharacterInputMode
+  characterReferenceImage?: string // URL of uploaded reference image
   speedFactor: number
   variants: number
   
