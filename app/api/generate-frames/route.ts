@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject, createJob, updateJob } from '@/lib/storage'
-import { generateFrame } from '@/lib/fal'
+import { generateFrame, getFalApiKey } from '@/lib/fal'
 import { FrameResult } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, falApiKey } = await request.json()
+    const { projectId, falApiKey: providedKey } = await request.json()
     
-    if (!projectId || !falApiKey) {
-      return NextResponse.json({ error: 'Project ID and FAL API key are required' }, { status: 400 })
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
+    }
+    
+    // Use provided key or environment variable
+    let apiKey: string
+    try {
+      apiKey = getFalApiKey(providedKey)
+    } catch {
+      return NextResponse.json({ error: 'FAL API key is required' }, { status: 400 })
     }
     
     const project = await getProject(projectId)
@@ -40,7 +48,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Start generation in background
-    processFrameGeneration(projectId, job.id, falApiKey, project)
+    processFrameGeneration(projectId, job.id, apiKey, project)
     
     return NextResponse.json({
       success: true,

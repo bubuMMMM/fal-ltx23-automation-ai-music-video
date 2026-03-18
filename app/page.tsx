@@ -1,3 +1,4 @@
+// Dashboard page - lists all projects
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Video, Clock, CheckCircle2 } from 'lucide-react'

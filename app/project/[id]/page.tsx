@@ -29,21 +29,27 @@ export default function ProjectPage() {
     { refreshInterval: 0 }
   )
   
+  // Check if server has FAL_KEY configured
+  const { data: configData } = useSWR<{ hasFalKey: boolean }>(
+    '/api/config',
+    fetcher
+  )
+  
   const [activeStep, setActiveStep] = useState<number>(1)
   const [falApiKey, setFalApiKey] = useState<string>('')
   const [showApiKeyInput, setShowApiKeyInput] = useState(false)
   
   const project = data?.project
+  const serverHasFalKey = configData?.hasFalKey || false
   
-  // Load API key from localStorage
+  // Load API key from localStorage - API key is optional if server has FAL_KEY configured
   useEffect(() => {
     if (projectId) {
       const savedKey = localStorage.getItem(`fal-api-key-${projectId}`)
       if (savedKey) {
         setFalApiKey(savedKey)
-      } else {
-        setShowApiKeyInput(true)
       }
+      // Don't force API key input - server may have FAL_KEY configured
     }
   }, [projectId])
   
@@ -97,27 +103,27 @@ export default function ProjectPage() {
     )
   }
   
-  // API Key modal
-  if (showApiKeyInput || !falApiKey) {
+  // API Key modal - only show if explicitly requested
+  if (showApiKeyInput) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
         <div className="mx-auto w-full max-w-md rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-3">
             <Key className="h-6 w-6 text-primary" />
-            <h2 className="text-lg font-semibold text-card-foreground">Enter API Key</h2>
+            <h2 className="text-lg font-semibold text-card-foreground">Configure API Key</h2>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your fal.ai API key is required to generate content
+            Enter your fal.ai API key or leave empty to use server configuration
           </p>
           <input
             type="password"
             value={falApiKey}
             onChange={(e) => setFalApiKey(e.target.value)}
-            placeholder="fal-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            placeholder="Leave empty if server has FAL_KEY configured"
             className="mt-4 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            Stored locally in your browser only.{' '}
+            Your key is stored locally in your browser.{' '}
             <a
               href="https://fal.ai/dashboard/keys"
               target="_blank"
@@ -127,7 +133,7 @@ export default function ProjectPage() {
               Get your key
             </a>
           </p>
-          <Button onClick={saveApiKey} className="mt-4 w-full" disabled={!falApiKey.trim()}>
+          <Button onClick={saveApiKey} className="mt-4 w-full">
             Continue
           </Button>
         </div>
@@ -148,12 +154,18 @@ export default function ProjectPage() {
             <span className="font-mono text-xs text-muted-foreground">
               {project.id.slice(0, 8)}
             </span>
+            {serverHasFalKey && (
+              <span className="flex items-center gap-1 text-xs text-green-500">
+                <Key className="h-3 w-3" />
+                Server configured
+              </span>
+            )}
             <button
               onClick={() => setShowApiKeyInput(true)}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               <Key className="h-3 w-3" />
-              API Key
+              {falApiKey ? 'Change Key' : 'Set Key'}
             </button>
           </div>
         </div>

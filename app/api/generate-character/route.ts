@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject } from '@/lib/storage'
-import { generateCharacterImages } from '@/lib/fal'
+import { generateCharacterImages, getFalApiKey } from '@/lib/fal'
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, falApiKey } = await request.json()
+    const { projectId, falApiKey: providedKey } = await request.json()
     
-    if (!projectId || !falApiKey) {
-      return NextResponse.json({ error: 'Project ID and FAL API key are required' }, { status: 400 })
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
+    }
+    
+    // Use provided key or environment variable
+    let apiKey: string
+    try {
+      apiKey = getFalApiKey(providedKey)
+    } catch {
+      return NextResponse.json({ error: 'FAL API key is required' }, { status: 400 })
     }
     
     const project = await getProject(projectId)
@@ -25,7 +33,7 @@ export async function POST(request: NextRequest) {
     try {
       // Generate 6 character variants
       const characterImages = await generateCharacterImages(
-        falApiKey,
+        apiKey,
         project.characterPrompt,
         project.characterStyle,
         6

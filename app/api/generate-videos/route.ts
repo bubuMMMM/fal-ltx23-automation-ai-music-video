@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject, createJob, updateJob, getProjectOutputDir } from '@/lib/storage'
-import { generateVideo, uploadToFal } from '@/lib/fal'
+import { generateVideo, uploadToFal, getFalApiKey } from '@/lib/fal'
 import { VideoResult } from '@/lib/types'
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -11,10 +11,18 @@ const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, falApiKey } = await request.json()
+    const { projectId, falApiKey: providedKey } = await request.json()
     
-    if (!projectId || !falApiKey) {
-      return NextResponse.json({ error: 'Project ID and FAL API key are required' }, { status: 400 })
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
+    }
+    
+    // Use provided key or environment variable
+    let apiKey: string
+    try {
+      apiKey = getFalApiKey(providedKey)
+    } catch {
+      return NextResponse.json({ error: 'FAL API key is required' }, { status: 400 })
     }
     
     const project = await getProject(projectId)
@@ -42,7 +50,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Start generation in background
-    processVideoGeneration(projectId, job.id, falApiKey, project)
+    processVideoGeneration(projectId, job.id, apiKey, project)
     
     return NextResponse.json({
       success: true,

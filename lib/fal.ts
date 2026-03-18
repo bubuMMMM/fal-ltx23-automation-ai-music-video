@@ -1,9 +1,21 @@
 import { fal } from '@fal-ai/client'
 
-export function configureFal(apiKey: string) {
-  fal.config({
-    credentials: apiKey
-  })
+export function configureFal(apiKey?: string) {
+  // Use provided API key or fallback to environment variable
+  const key = apiKey || process.env.FAL_KEY
+  if (key) {
+    fal.config({
+      credentials: key
+    })
+  }
+}
+
+export function getFalApiKey(providedKey?: string): string {
+  const key = providedKey || process.env.FAL_KEY
+  if (!key) {
+    throw new Error('FAL API key is required. Set FAL_KEY environment variable or provide the key.')
+  }
+  return key
 }
 
 export interface GenerateImageResult {

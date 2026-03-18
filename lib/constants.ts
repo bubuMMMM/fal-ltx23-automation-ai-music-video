@@ -1,3 +1,4 @@
+// Constants for AI Music Video Generator
 export const DEFAULT_CHARACTER_PROMPT = `Mexican guy, messy textured hair, red Converse Chuck 70 high tops, black skinny jeans with chain, vintage red Members Only jacket, round sunglasses, toothpick in mouth, cool lean pose.`
 
 export const DEFAULT_CHARACTER_STYLE = `CLAYMATION STOP MOTION STYLE, visible clay texture, fingerprint marks, Aardman Laika quality, handmade miniature world`

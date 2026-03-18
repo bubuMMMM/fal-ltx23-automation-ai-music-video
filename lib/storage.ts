@@ -1,3 +1,4 @@
+// Storage utilities for project and job management
 import { Project, Job } from './types'
 import { v4 as uuidv4 } from 'uuid'
 import fs from 'fs/promises'
