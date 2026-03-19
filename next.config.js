@@ -28,9 +28,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "50mb",
     },
+    serverExternalPackages: ["fluent-ffmpeg"],
   },
-  // Increase timeout for video generation API routes
-  serverExternalPackages: ["fluent-ffmpeg"],
 }
 
 module.exports = nextConfig
