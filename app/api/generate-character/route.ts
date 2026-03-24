@@ -31,12 +31,24 @@ export async function POST(request: NextRequest) {
     })
     
     try {
+      // Build reference image URLs from stored files
+      const referenceImageUrls: string[] = []
+      if (project.referenceImageUrls && project.referenceImageUrls.length > 0) {
+        // Convert local URLs to full URLs for fal.ai
+        for (const localUrl of project.referenceImageUrls) {
+          // If it's a local path, we need to upload it to fal storage first
+          const fullUrl = `${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000'}${localUrl}`
+          referenceImageUrls.push(fullUrl)
+        }
+      }
+      
       // Generate 6 character variants
       const characterImages = await generateCharacterImages(
         apiKey,
         project.characterPrompt,
         project.characterStyle,
-        6
+        6,
+        referenceImageUrls
       )
       
       // Update project with results

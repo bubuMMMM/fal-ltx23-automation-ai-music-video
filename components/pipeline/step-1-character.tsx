@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Project } from '@/lib/types'
-import { Loader2, Check, Sparkles } from 'lucide-react'
+import { Loader2, Check, Sparkles, ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Step1Props {
@@ -83,6 +83,29 @@ export function Step1Character({ project, falApiKey, onUpdate, onNext }: Step1Pr
           Generate 6 character variants and select your favorite
         </p>
       </div>
+      
+      {/* Reference images preview */}
+      {project.referenceImageUrls && project.referenceImageUrls.length > 0 && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+            <p className="text-xs font-medium text-muted-foreground">Reference Images ({project.referenceImageUrls.length})</p>
+          </div>
+          <div className="mt-3 flex gap-3">
+            {project.referenceImageUrls.map((url, idx) => (
+              <div key={idx} className="relative h-20 w-20 overflow-hidden rounded-md border border-border">
+                <Image
+                  src={url}
+                  alt={`Reference ${idx + 1}`}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Character prompt preview */}
       <div className="rounded-lg border border-border bg-card p-4">

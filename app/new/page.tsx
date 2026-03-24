@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Upload, Music, ArrowLeft, Loader2, Key, CheckCircle2 } from 'lucide-react'
+import { Upload, Music, ArrowLeft, Loader2, Key, CheckCircle2, Image as ImageIcon, X } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { DEFAULT_CHARACTER_PROMPT, DEFAULT_CHARACTER_STYLE } from '@/lib/constants'
 
@@ -31,6 +32,9 @@ export default function NewProjectPage() {
   const [speedFactor, setSpeedFactor] = useState(0.75)
   const [variants, setVariants] = useState('3')
   const [falApiKey, setFalApiKey] = useState('')
+  const [storyDescription, setStoryDescription] = useState('')
+  const [referenceImages, setReferenceImages] = useState<(File | null)[]>([null, null])
+  const [referenceImagePreviews, setReferenceImagePreviews] = useState<(string | null)[]>([null, null])
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -47,6 +51,30 @@ export default function NewProjectPage() {
     accept: { 'audio/mpeg': ['.mp3'] },
     maxFiles: 1
   })
+  
+  function handleReferenceImageChange(index: number, file: File | null) {
+    const newImages = [...referenceImages]
+    const newPreviews = [...referenceImagePreviews]
+    
+    newImages[index] = file
+    
+    // Create preview URL
+    if (file) {
+      newPreviews[index] = URL.createObjectURL(file)
+    } else {
+      if (newPreviews[index]) {
+        URL.revokeObjectURL(newPreviews[index]!)
+      }
+      newPreviews[index] = null
+    }
+    
+    setReferenceImages(newImages)
+    setReferenceImagePreviews(newPreviews)
+  }
+  
+  function removeReferenceImage(index: number) {
+    handleReferenceImageChange(index, null)
+  }
   
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -66,6 +94,15 @@ export default function NewProjectPage() {
       formData.append('characterStyle', characterStyle)
       formData.append('speedFactor', speedFactor.toString())
       formData.append('variants', variants)
+      formData.append('storyDescription', storyDescription)
+      
+      // Add reference images
+      if (referenceImages[0]) {
+        formData.append('referenceImage1', referenceImages[0])
+      }
+      if (referenceImages[1]) {
+        formData.append('referenceImage2', referenceImages[1])
+      }
       
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -147,6 +184,53 @@ export default function NewProjectPage() {
             </div>
           </div>
           
+          {/* Reference Images (up to 2) */}
+          <div className="space-y-3">
+            <Label>Reference Images (Optional)</Label>
+            <p className="text-xs text-muted-foreground">
+              Upload up to 2 reference images to guide character generation
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {[0, 1].map((index) => (
+                <div key={index} className="relative">
+                  {referenceImagePreviews[index] ? (
+                    <div className="relative aspect-square overflow-hidden rounded-lg border border-border">
+                      <Image
+                        src={referenceImagePreviews[index]!}
+                        alt={`Reference ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeReferenceImage(index)}
+                        className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border hover:border-muted-foreground transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleReferenceImageChange(index, file)
+                        }}
+                      />
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      <span className="mt-2 text-xs text-muted-foreground">
+                        Image {index + 1}
+                      </span>
+                    </label>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          
           {/* Character Prompt */}
           <div className="space-y-3">
             <Label htmlFor="characterPrompt">Character Prompt</Label>
@@ -176,6 +260,22 @@ export default function NewProjectPage() {
             />
             <p className="text-xs text-muted-foreground">
               Define the artistic style (claymation, stop-motion, etc.)
+            </p>
+          </div>
+          
+          {/* Story Description */}
+          <div className="space-y-3">
+            <Label htmlFor="storyDescription">Story Description</Label>
+            <textarea
+              id="storyDescription"
+              value={storyDescription}
+              onChange={(e) => setStoryDescription(e.target.value)}
+              rows={5}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Describe the story of your music video... e.g., 'A day in the life of a clay character who wakes up in a sneaker house, goes to work at a record shop, and performs at a concert in the evening.'"
+            />
+            <p className="text-xs text-muted-foreground">
+              Describe the narrative arc of your music video. The AI will generate scene descriptions based on this story for each segment.
             </p>
           </div>
           

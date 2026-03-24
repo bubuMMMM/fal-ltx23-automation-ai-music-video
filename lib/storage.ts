@@ -27,13 +27,15 @@ export async function initStorage() {
 }
 
 // Project operations
-export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'currentStep' | 'stepStatuses' | 'status' | 'characterImages' | 'selectedCharacter' | 'segments' | 'frameResults' | 'frameSelections' | 'videoResults' | 'videoSelections' | 'finalVideoPath' | 'finalVideoUrl'>): Promise<Project> {
+export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'currentStep' | 'stepStatuses' | 'status' | 'characterImages' | 'selectedCharacter' | 'segments' | 'frameResults' | 'frameSelections' | 'videoResults' | 'videoSelections' | 'finalVideoPath' | 'finalVideoUrl' | 'referenceImages' | 'referenceImageUrls'> & { referenceImages?: string[]; referenceImageUrls?: string[] }): Promise<Project> {
   await initStorage()
   
   const project: Project = {
     id: uuidv4(),
     createdAt: new Date().toISOString(),
     ...data,
+    referenceImages: data.referenceImages || [],
+    referenceImageUrls: data.referenceImageUrls || [],
     currentStep: 1,
     stepStatuses: {
       1: 'pending',
@@ -176,6 +178,23 @@ export function getPublicUrl(filepath: string): string {
   // Convert absolute path to public URL
   const publicPath = filepath.replace(process.cwd(), '').replace(/\\/g, '/')
   return publicPath.startsWith('/public') ? publicPath.replace('/public', '') : publicPath
+}
+
+export async function saveUploadedImage(file: File, projectId: string, index: number): Promise<string> {
+  await initStorage()
+  
+  const projectUploadDir = path.join(UPLOADS_DIR, projectId)
+  await ensureDir(projectUploadDir)
+  
+  // Get file extension
+  const ext = file.name.split('.').pop() || 'png'
+  const filename = `reference_${index}_${Date.now()}.${ext}`
+  const filepath = path.join(projectUploadDir, filename)
+  
+  const buffer = Buffer.from(await file.arrayBuffer())
+  await fs.writeFile(filepath, buffer)
+  
+  return filepath
 }
 
 export async function getProjectOutputDir(projectId: string): Promise<string> {

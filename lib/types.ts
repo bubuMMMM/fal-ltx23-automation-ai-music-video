@@ -35,6 +35,13 @@ export interface Project {
   speedFactor: number
   variants: number
   
+  // Reference images (up to 2) for nano-banana-2/edit
+  referenceImages: string[]
+  referenceImageUrls: string[]
+  
+  // Story description for AI-generated scenes
+  storyDescription: string
+  
   // Step outputs
   characterImages: string[]
   selectedCharacter: string | null

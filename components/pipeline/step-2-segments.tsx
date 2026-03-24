@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Project } from '@/lib/types'
-import { Loader2, Clock, Edit2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, Clock, Edit2, ChevronDown, ChevronUp, BookOpen, Sparkles } from 'lucide-react'
 import { formatTime } from '@/lib/audio'
 
 interface Step2Props {
@@ -91,6 +91,21 @@ export function Step2Segments({ project, onUpdate, onNext }: Step2Props) {
         </p>
       </div>
       
+      {/* Story description preview */}
+      {project.storyDescription && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="flex items-start gap-3">
+            <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div>
+              <p className="text-sm font-medium text-card-foreground">Story Description</p>
+              <p className="mt-1 text-sm text-muted-foreground line-clamp-3">
+                {project.storyDescription}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Audio info */}
       {project.audioDuration && (
         <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
@@ -112,16 +127,28 @@ export function Step2Segments({ project, onUpdate, onNext }: Step2Props) {
           {isBuilding ? (
             <>
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="mt-4 font-medium text-foreground">Analyzing audio...</p>
+              <p className="mt-4 font-medium text-foreground">
+                {project.storyDescription ? 'Generating AI scenes from your story...' : 'Analyzing audio...'}
+              </p>
+              {project.storyDescription && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Creating scenes based on your narrative
+                </p>
+              )}
             </>
           ) : (
             <>
-              <p className="font-medium text-foreground">Ready to segment</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Split audio into 1-4 second segments with random scenes
+              <Sparkles className="h-12 w-12 text-primary" />
+              <p className="mt-4 font-medium text-foreground">Ready to generate scenes</p>
+              <p className="mt-1 max-w-md text-center text-sm text-muted-foreground">
+                {project.storyDescription 
+                  ? 'AI will generate scene descriptions based on your story to match each audio segment'
+                  : 'Split audio into 1-4 second segments with default scenes (add a story description for AI-generated scenes)'
+                }
               </p>
-              <Button onClick={buildSegments} className="mt-4">
-                Build Segments
+              <Button onClick={buildSegments} className="mt-4 gap-2">
+                <Sparkles className="h-4 w-4" />
+                {project.storyDescription ? 'Generate AI Scenes' : 'Build Segments'}
               </Button>
             </>
           )}
