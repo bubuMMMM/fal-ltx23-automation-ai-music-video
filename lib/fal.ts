@@ -2,7 +2,7 @@ import { fal } from '@fal-ai/client'
 
 // Configure fal client once using server-side env variable
 fal.config({
-  credentials: process.env.FAL_KEY
+  credentials: process.env.API_FAL
 })
 
 export interface GenerateImageResult {
