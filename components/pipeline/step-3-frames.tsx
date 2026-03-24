@@ -9,12 +9,11 @@ import { Loader2, ImageIcon } from 'lucide-react'
 
 interface Step3Props {
   project: Project
-  falApiKey: string
   onUpdate: () => void
   onNext: () => void
 }
 
-export function Step3Frames({ project, falApiKey, onUpdate, onNext }: Step3Props) {
+export function Step3Frames({ project, onUpdate, onNext }: Step3Props) {
   const [jobId, setJobId] = useState<string | null>(null)
   const [job, setJob] = useState<Job | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -70,8 +69,7 @@ export function Step3Frames({ project, falApiKey, onUpdate, onNext }: Step3Props
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId: project.id,
-          falApiKey
+          projectId: project.id
         })
       })
       

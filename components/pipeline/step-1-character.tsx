@@ -10,12 +10,11 @@ import { cn } from '@/lib/utils'
 
 interface Step1Props {
   project: Project
-  falApiKey: string
   onUpdate: () => void
   onNext: () => void
 }
 
-export function Step1Character({ project, falApiKey, onUpdate, onNext }: Step1Props) {
+export function Step1Character({ project, onUpdate, onNext }: Step1Props) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(
     project.selectedCharacter 
@@ -66,8 +65,7 @@ export function Step1Character({ project, falApiKey, onUpdate, onNext }: Step1Pr
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId: project.id,
-          falApiKey
+          projectId: project.id
         })
       })
       

@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Upload, Music, ArrowLeft, Loader2, Key, CheckCircle2, ImageIcon, Type, X } from 'lucide-react'
+import { Upload, Music, ArrowLeft, Loader2, ImageIcon, Type, X } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { DEFAULT_CHARACTER_PROMPT, DEFAULT_CHARACTER_STYLE } from '@/lib/constants'
@@ -18,15 +18,6 @@ export default function NewProjectPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [serverHasFalKey, setServerHasFalKey] = useState(false)
-  
-  // Check if server has FAL_KEY configured
-  useEffect(() => {
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(data => setServerHasFalKey(data.hasFalKey))
-      .catch(() => setServerHasFalKey(false))
-  }, [])
   
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [characterInputMode, setCharacterInputMode] = useState<CharacterInputMode>('prompt')
@@ -36,7 +27,6 @@ export default function NewProjectPage() {
   const [characterStyle, setCharacterStyle] = useState(DEFAULT_CHARACTER_STYLE)
   const [speedFactor, setSpeedFactor] = useState(0.75)
   const [variants, setVariants] = useState('3')
-  const [falApiKey, setFalApiKey] = useState('')
   
   const onDropAudio = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -119,12 +109,6 @@ export default function NewProjectPage() {
       }
       
       const { project } = await response.json()
-      
-      // Store API key in localStorage if provided (never sent to server for storage)
-      if (falApiKey.trim()) {
-        localStorage.setItem(`fal-api-key-${project.id}`, falApiKey)
-      }
-      
       router.push(`/project/${project.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create project')
@@ -341,50 +325,6 @@ export default function NewProjectPage() {
             </Select>
             <p className="text-xs text-muted-foreground">
               More variants = more choices, but longer generation time
-            </p>
-          </div>
-          
-          {/* API Key - Optional if FAL_KEY env var is set */}
-          <div className="space-y-3">
-            <Label htmlFor="falApiKey" className="flex items-center gap-2">
-              <Key className="h-4 w-4" />
-              fal.ai API Key
-              {serverHasFalKey && (
-                <span className="flex items-center gap-1 text-xs text-green-500">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Server configured
-                </span>
-              )}
-            </Label>
-            {serverHasFalKey ? (
-              <div className="rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3">
-                <p className="text-sm text-green-400">
-                  Server has FAL_KEY configured. You can skip this field or provide your own key for billing to your account.
-                </p>
-              </div>
-            ) : (
-              <input
-                id="falApiKey"
-                type="password"
-                value={falApiKey}
-                onChange={(e) => setFalApiKey(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="fal-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              />
-            )}
-            <p className="text-xs text-muted-foreground">
-              {serverHasFalKey 
-                ? 'Optional: Provide your own key if you want usage billed to your fal.ai account.'
-                : 'Required: Your API key is stored locally and never saved to our servers.'
-              }{' '}
-              <a 
-                href="https://fal.ai/dashboard/keys" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Get your key
-              </a>
             </p>
           </div>
           

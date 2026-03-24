@@ -8,12 +8,11 @@ import { Loader2, Video } from 'lucide-react'
 
 interface Step5Props {
   project: Project
-  falApiKey: string
   onUpdate: () => void
   onNext: () => void
 }
 
-export function Step5Videos({ project, falApiKey, onUpdate, onNext }: Step5Props) {
+export function Step5Videos({ project, onUpdate, onNext }: Step5Props) {
   const [jobId, setJobId] = useState<string | null>(null)
   const [job, setJob] = useState<Job | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -69,8 +68,7 @@ export function Step5Videos({ project, falApiKey, onUpdate, onNext }: Step5Props
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId: project.id,
-          falApiKey
+          projectId: project.id
         })
       })
       
