@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createProject, listProjects, saveUploadedFile, saveCharacterImage, getPublicUrl } from '@/lib/storage'
+import { createProject, listProjects, saveUploadedFile, getPublicUrl } from '@/lib/storage'
 import { DEFAULT_CHARACTER_PROMPT, DEFAULT_CHARACTER_STYLE } from '@/lib/constants'
-import { CharacterInputMode } from '@/lib/types'
 
 export async function GET() {
   try {
@@ -18,9 +17,6 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     
     const audioFile = formData.get('audioFile') as File | null
-    const storyDescription = formData.get('storyDescription') as string || ''
-    const characterInputMode = (formData.get('characterInputMode') as CharacterInputMode) || 'prompt'
-    const characterImage = formData.get('characterImage') as File | null
     const characterPrompt = formData.get('characterPrompt') as string || DEFAULT_CHARACTER_PROMPT
     const characterStyle = formData.get('characterStyle') as string || DEFAULT_CHARACTER_STYLE
     const speedFactor = parseFloat(formData.get('speedFactor') as string) || 0.75
@@ -30,17 +26,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Audio file is required' }, { status: 400 })
     }
     
-    if (characterInputMode === 'image' && !characterImage) {
-      return NextResponse.json({ error: 'Character image is required when using image mode' }, { status: 400 })
-    }
-    
     // Create project first to get ID
     const project = await createProject({
       audioFile: '', // Will update after saving
-      storyDescription,
       characterPrompt,
       characterStyle,
-      characterInputMode,
       speedFactor,
       variants
     })
@@ -49,23 +39,12 @@ export async function POST(request: NextRequest) {
     const audioPath = await saveUploadedFile(audioFile, project.id)
     const audioUrl = getPublicUrl(audioPath)
     
-    // Save character image if provided
-    let characterReferenceImage: string | undefined
-    if (characterInputMode === 'image' && characterImage) {
-      const imagePath = await saveCharacterImage(characterImage, project.id)
-      characterReferenceImage = getPublicUrl(imagePath)
-    }
-    
-    // Update project with paths
+    // Update project with audio path
     const { updateProject } = await import('@/lib/storage')
-    await updateProject(project.id, { 
-      audioFile: audioPath, 
-      audioUrl,
-      characterReferenceImage
-    })
+    await updateProject(project.id, { audioFile: audioPath, audioUrl })
     
     return NextResponse.json({ 
-      project: { ...project, audioFile: audioPath, audioUrl, characterReferenceImage } 
+      project: { ...project, audioFile: audioPath, audioUrl } 
     })
   } catch (error) {
     console.error('Error creating project:', error)

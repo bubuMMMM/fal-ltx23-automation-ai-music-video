@@ -24,19 +24,14 @@ export interface VideoResult {
 
 export type StepStatus = 'pending' | 'running' | 'done' | 'error'
 
-export type CharacterInputMode = 'prompt' | 'image'
-
 export interface Project {
   id: string
   createdAt: string
   audioFile: string
   audioUrl?: string
   audioDuration?: number
-  storyDescription: string // Brief description of the video story
   characterPrompt: string
   characterStyle: string
-  characterInputMode: CharacterInputMode
-  characterReferenceImage?: string // URL of uploaded reference image
   speedFactor: number
   variants: number
   

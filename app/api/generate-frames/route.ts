@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject, createJob, updateJob } from '@/lib/storage'
-import { generateFrame } from '@/lib/fal'
+import { generateFrame, getFalApiKey } from '@/lib/fal'
 import { FrameResult } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId } = await request.json()
+    const { projectId, falApiKey: providedKey } = await request.json()
     
     if (!projectId) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
+    }
+    
+    // Use provided key or environment variable
+    let apiKey: string
+    try {
+      apiKey = getFalApiKey(providedKey)
+    } catch {
+      return NextResponse.json({ error: 'FAL API key is required' }, { status: 400 })
     }
     
     const project = await getProject(projectId)
@@ -40,7 +48,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Start generation in background
-    processFrameGeneration(projectId, job.id, project)
+    processFrameGeneration(projectId, job.id, apiKey, project)
     
     return NextResponse.json({
       success: true,
@@ -55,8 +63,9 @@ export async function POST(request: NextRequest) {
 }
 
 async function processFrameGeneration(
-  projectId: string,
-  jobId: string,
+  projectId: string, 
+  jobId: string, 
+  apiKey: string,
   project: Awaited<ReturnType<typeof getProject>>
 ) {
   if (!project) return
@@ -82,19 +91,13 @@ async function processFrameGeneration(
       batch.map(async ({ segmentIndex, variantIndex }) => {
         const segment = project.segments[segmentIndex]
         
-        console.log(`[v0] Generating frame for segment ${segmentIndex}, variant ${variantIndex}`)
-        console.log(`[v0] Character image: ${project.selectedCharacter}`)
-        console.log(`[v0] Scene: ${segment.scene}`)
-        
         try {
           const imageUrl = await generateFrame(
+            apiKey,
             project.selectedCharacter!,
             segment.scene,
-            project.characterStyle,
-            project.storyDescription
+            project.characterStyle
           )
-          
-          console.log(`[v0] Frame generated successfully: ${imageUrl}`)
           
           return {
             segmentIndex,
@@ -103,7 +106,6 @@ async function processFrameGeneration(
             status: 'done' as const
           }
         } catch (error) {
-          console.error(`[v0] Frame generation failed:`, error)
           return {
             segmentIndex,
             variantIndex,
