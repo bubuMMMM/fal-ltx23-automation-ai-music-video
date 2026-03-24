@@ -63,10 +63,10 @@ export async function generateCharacterImages(
       const result = await fal.subscribe('fal-ai/nano-banana-2/edit', {
         input: {
           prompt: fullPrompt,
-          image_url: referenceImageUrls[0], // nano-banana-2/edit takes single image_url
-          num_images: 1,
+          image_urls: referenceImageUrls, // array of URLs (required field name)
+          aspect_ratio: "1:1",
           output_format: "png",
-          aspect_ratio: "1:1"
+          safety_tolerance: "6"
         }
       }) as { data: NanoBanana2Result }
       
@@ -76,9 +76,9 @@ export async function generateCharacterImages(
       const result = await fal.subscribe('fal-ai/nano-banana-2', {
         input: {
           prompt: fullPrompt,
-          num_images: 1,
+          aspect_ratio: "1:1",
           output_format: "png",
-          aspect_ratio: "1:1"
+          safety_tolerance: "6"
         }
       }) as { data: NanoBanana2Result }
       
@@ -102,11 +102,11 @@ export async function generateFrame(
   
   const result = await fal.subscribe('fal-ai/nano-banana-2/edit', {
     input: {
-      image_url: characterImageUrl,
+      image_urls: [characterImageUrl], // required array field
       prompt,
-      num_images: 1,
       output_format: "png",
-      aspect_ratio: "16:9"
+      aspect_ratio: "16:9",
+      safety_tolerance: "6"
     }
   }) as { data: NanoBanana2Result }
   
