@@ -27,13 +27,14 @@ export async function initStorage() {
 }
 
 // Project operations
-export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'currentStep' | 'stepStatuses' | 'status' | 'characterImages' | 'selectedCharacter' | 'segments' | 'frameResults' | 'frameSelections' | 'videoResults' | 'videoSelections' | 'finalVideoPath' | 'finalVideoUrl'> & { characterInputMode?: 'prompt' | 'image' }): Promise<Project> {
+export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'currentStep' | 'stepStatuses' | 'status' | 'characterImages' | 'selectedCharacter' | 'segments' | 'frameResults' | 'frameSelections' | 'videoResults' | 'videoSelections' | 'finalVideoPath' | 'finalVideoUrl'> & { characterInputMode?: 'prompt' | 'image'; storyDescription?: string }): Promise<Project> {
   await initStorage()
   
   const project: Project = {
     id: uuidv4(),
     createdAt: new Date().toISOString(),
     ...data,
+    storyDescription: data.storyDescription || '',
     characterInputMode: data.characterInputMode || 'prompt',
     currentStep: 1,
     stepStatuses: {

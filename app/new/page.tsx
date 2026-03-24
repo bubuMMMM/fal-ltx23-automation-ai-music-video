@@ -23,6 +23,7 @@ export default function NewProjectPage() {
   const [characterInputMode, setCharacterInputMode] = useState<CharacterInputMode>('prompt')
   const [characterImage, setCharacterImage] = useState<File | null>(null)
   const [characterImagePreview, setCharacterImagePreview] = useState<string | null>(null)
+  const [storyDescription, setStoryDescription] = useState('')
   const [characterPrompt, setCharacterPrompt] = useState(DEFAULT_CHARACTER_PROMPT)
   const [characterStyle, setCharacterStyle] = useState(DEFAULT_CHARACTER_STYLE)
   const [speedFactor, setSpeedFactor] = useState(0.75)
@@ -88,6 +89,7 @@ export default function NewProjectPage() {
     try {
       const formData = new FormData()
       formData.append('audioFile', audioFile)
+      formData.append('storyDescription', storyDescription)
       formData.append('characterInputMode', characterInputMode)
       formData.append('characterPrompt', characterPrompt)
       formData.append('characterStyle', characterStyle)
@@ -170,6 +172,22 @@ export default function NewProjectPage() {
                 </>
               )}
             </div>
+          </div>
+          
+          {/* Story Description */}
+          <div className="space-y-3">
+            <Label htmlFor="storyDescription">Story Description</Label>
+            <textarea
+              id="storyDescription"
+              value={storyDescription}
+              onChange={(e) => setStoryDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="e.g., A journey through space, a love story in the city, an epic adventure..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Briefly describe the story or theme of your music video. This will guide the scene generation.
+            </p>
           </div>
           
           {/* Character Input Mode Toggle */}

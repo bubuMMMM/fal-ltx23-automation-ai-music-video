@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject } from '@/lib/storage'
-import { generateCharacterImages } from '@/lib/fal'
+import { generateCharacterImages, generateCharacterFromImage } from '@/lib/fal'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,11 +23,25 @@ export async function POST(request: NextRequest) {
     })
     
     try {
-      const characterImages = await generateCharacterImages(
-        project.characterPrompt,
-        project.characterStyle,
-        6
-      )
+      let characterImages: string[]
+      
+      // Check if using image mode or prompt mode
+      if (project.characterInputMode === 'image' && project.characterReferenceImage) {
+        // Generate variations from reference image using nano-banana-2/edit
+        characterImages = await generateCharacterFromImage(
+          project.characterReferenceImage,
+          project.characterPrompt,
+          project.characterStyle,
+          6
+        )
+      } else {
+        // Generate from text prompt using nano-banana-2
+        characterImages = await generateCharacterImages(
+          project.characterPrompt,
+          project.characterStyle,
+          6
+        )
+      }
       
       // Update project with results
       const updatedProject = await updateProject(projectId, {

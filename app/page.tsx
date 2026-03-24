@@ -75,9 +75,11 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                     <h3 className="mt-2 font-medium text-card-foreground line-clamp-2">
-                      {project.characterInputMode === 'image' 
-                        ? 'Custom character image'
-                        : `${project.characterPrompt.slice(0, 60)}...`}
+                      {project.storyDescription 
+                        ? project.storyDescription
+                        : project.characterInputMode === 'image' 
+                          ? 'Custom character image'
+                          : `${project.characterPrompt.slice(0, 60)}...`}
                     </h3>
                   </div>
                   <StatusBadge status={project.status} />

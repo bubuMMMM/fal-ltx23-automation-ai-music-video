@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     
     const audioFile = formData.get('audioFile') as File | null
+    const storyDescription = formData.get('storyDescription') as string || ''
     const characterInputMode = (formData.get('characterInputMode') as CharacterInputMode) || 'prompt'
     const characterImage = formData.get('characterImage') as File | null
     const characterPrompt = formData.get('characterPrompt') as string || DEFAULT_CHARACTER_PROMPT
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
     // Create project first to get ID
     const project = await createProject({
       audioFile: '', // Will update after saving
+      storyDescription,
       characterPrompt,
       characterStyle,
       characterInputMode,

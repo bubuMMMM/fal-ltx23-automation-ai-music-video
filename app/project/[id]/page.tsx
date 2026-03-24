@@ -86,6 +86,11 @@ export default function ProjectPage() {
             Dashboard
           </Link>
           <div className="flex items-center gap-4">
+            {project.storyDescription && (
+              <span className="max-w-[200px] truncate text-xs text-muted-foreground" title={project.storyDescription}>
+                {project.storyDescription}
+              </span>
+            )}
             <span className="font-mono text-xs text-muted-foreground">
               {project.id.slice(0, 8)}
             </span>

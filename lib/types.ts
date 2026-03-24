@@ -32,6 +32,7 @@ export interface Project {
   audioFile: string
   audioUrl?: string
   audioDuration?: number
+  storyDescription: string // Brief description of the video story
   characterPrompt: string
   characterStyle: string
   characterInputMode: CharacterInputMode

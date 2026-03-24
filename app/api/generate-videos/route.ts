@@ -144,7 +144,8 @@ async function processVideoGeneration(
             imageUrl,
             audioUrl,
             segment.scene,
-            project.characterStyle
+            project.characterStyle,
+            project.storyDescription
           )
           
           return {

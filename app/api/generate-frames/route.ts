@@ -86,7 +86,8 @@ async function processFrameGeneration(
           const imageUrl = await generateFrame(
             project.selectedCharacter!,
             segment.scene,
-            project.characterStyle
+            project.characterStyle,
+            project.storyDescription
           )
           
           return {
