@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject, createJob, updateJob, getProjectOutputDir } from '@/lib/storage'
-import { generateVideo, uploadToFal, getFalApiKey } from '@/lib/fal'
+import { generateVideo, uploadToFal } from '@/lib/fal'
 import { VideoResult } from '@/lib/types'
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -11,18 +11,10 @@ const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, falApiKey: providedKey } = await request.json()
+    const { projectId } = await request.json()
     
     if (!projectId) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
-    }
-    
-    // Use provided key or environment variable
-    let apiKey: string
-    try {
-      apiKey = getFalApiKey(providedKey)
-    } catch {
-      return NextResponse.json({ error: 'FAL API key is required' }, { status: 400 })
     }
     
     const project = await getProject(projectId)
@@ -50,7 +42,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Start generation in background
-    processVideoGeneration(projectId, job.id, apiKey, project)
+    processVideoGeneration(projectId, job.id, project)
     
     return NextResponse.json({
       success: true,
@@ -87,7 +79,6 @@ async function sliceAudio(
 async function processVideoGeneration(
   projectId: string,
   jobId: string,
-  apiKey: string,
   project: Awaited<ReturnType<typeof getProject>>
 ) {
   if (!project) return
@@ -112,7 +103,7 @@ async function processVideoGeneration(
       
       // Upload slice to fal storage
       const sliceBuffer = await fs.readFile(slicePath)
-      const audioUrl = await uploadToFal(apiKey, sliceBuffer, `segment_${segment.index}.mp3`)
+      const audioUrl = await uploadToFal(sliceBuffer, `segment_${segment.index}.mp3`)
       audioSlices.set(segment.index, audioUrl)
     } catch (error) {
       console.error(`Failed to prepare audio for segment ${segment.index}:`, error)
@@ -150,7 +141,6 @@ async function processVideoGeneration(
         
         try {
           const videoUrl = await generateVideo(
-            apiKey,
             imageUrl,
             audioUrl,
             segment.scene,

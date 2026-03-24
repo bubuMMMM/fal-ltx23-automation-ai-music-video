@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject, createJob, updateJob } from '@/lib/storage'
-import { generateFrame, getFalApiKey } from '@/lib/fal'
+import { generateFrame } from '@/lib/fal'
 import { FrameResult } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, falApiKey: providedKey } = await request.json()
+    const { projectId } = await request.json()
     
     if (!projectId) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
-    }
-    
-    // Use provided key or environment variable
-    let apiKey: string
-    try {
-      apiKey = getFalApiKey(providedKey)
-    } catch {
-      return NextResponse.json({ error: 'FAL API key is required' }, { status: 400 })
     }
     
     const project = await getProject(projectId)
@@ -48,7 +40,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Start generation in background
-    processFrameGeneration(projectId, job.id, apiKey, project)
+    processFrameGeneration(projectId, job.id, project)
     
     return NextResponse.json({
       success: true,
@@ -63,9 +55,8 @@ export async function POST(request: NextRequest) {
 }
 
 async function processFrameGeneration(
-  projectId: string, 
-  jobId: string, 
-  apiKey: string,
+  projectId: string,
+  jobId: string,
   project: Awaited<ReturnType<typeof getProject>>
 ) {
   if (!project) return
@@ -93,7 +84,6 @@ async function processFrameGeneration(
         
         try {
           const imageUrl = await generateFrame(
-            apiKey,
             project.selectedCharacter!,
             segment.scene,
             project.characterStyle
