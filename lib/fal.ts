@@ -42,9 +42,11 @@ export async function generateCharacterImages(
         resolution: '1K',
         safety_tolerance: '4',
       },
-    }) as { data: GenerateImageResult }
+    })
 
-    return result.data.images[0]?.url
+    // Result is returned directly, not in a data property
+    const data = result.data || result
+    return (data as GenerateImageResult).images?.[0]?.url
   })
 
   const images = await Promise.all(promises)
@@ -71,9 +73,10 @@ export async function generateCharacterFromImage(
         resolution: '1K',
         safety_tolerance: '4',
       },
-    }) as { data: GenerateImageResult }
+    })
 
-    return result.data.images[0]?.url
+    const data = result.data || result
+    return (data as GenerateImageResult).images?.[0]?.url
   })
 
   const images = await Promise.all(promises)
@@ -88,7 +91,9 @@ export async function generateFrame(
   storyDescription?: string
 ): Promise<string> {
   const storyContext = storyDescription ? `. Story context: ${storyDescription}` : ''
-  const prompt = `Place this exact character into a scene. ${scene}${storyContext}. ${style}. Character face clearly visible and expressive, 16:9 widescreen cinematic composition.`
+  const prompt = `Place this exact character into a scene. ${scene}${storyContext}. ${style}. Character face clearly visible and expressive, cinematic composition.`
+
+  console.log('[v0] generateFrame called with:', { characterImageUrl, scene, style, storyDescription })
 
   const result = await fal.subscribe('fal-ai/nano-banana-2/edit', {
     input: {
@@ -100,11 +105,18 @@ export async function generateFrame(
       resolution: '1K',
       safety_tolerance: '4',
     },
-  }) as { data: GenerateImageResult }
+  })
 
-  const imageUrl = result.data.images[0]?.url
-  if (!imageUrl) throw new Error('No image generated')
+  console.log('[v0] generateFrame result:', JSON.stringify(result, null, 2))
 
+  const data = result.data || result
+  const imageUrl = (data as GenerateImageResult).images?.[0]?.url
+  if (!imageUrl) {
+    console.log('[v0] No image URL found in result')
+    throw new Error('No image generated')
+  }
+
+  console.log('[v0] generateFrame success, imageUrl:', imageUrl)
   return imageUrl
 }
 
@@ -130,9 +142,10 @@ export async function generateVideo(
       fps: 25,
       resolution: '1080p',
     },
-  }) as { data: GenerateVideoResult }
+  })
 
-  const videoUrl = result.data.video?.url
+  const data = result.data || result
+  const videoUrl = (data as GenerateVideoResult).video?.url
   if (!videoUrl) throw new Error('No video generated')
 
   return videoUrl

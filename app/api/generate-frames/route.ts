@@ -82,6 +82,10 @@ async function processFrameGeneration(
       batch.map(async ({ segmentIndex, variantIndex }) => {
         const segment = project.segments[segmentIndex]
         
+        console.log(`[v0] Generating frame for segment ${segmentIndex}, variant ${variantIndex}`)
+        console.log(`[v0] Character image: ${project.selectedCharacter}`)
+        console.log(`[v0] Scene: ${segment.scene}`)
+        
         try {
           const imageUrl = await generateFrame(
             project.selectedCharacter!,
@@ -90,6 +94,8 @@ async function processFrameGeneration(
             project.storyDescription
           )
           
+          console.log(`[v0] Frame generated successfully: ${imageUrl}`)
+          
           return {
             segmentIndex,
             variantIndex,
@@ -97,6 +103,7 @@ async function processFrameGeneration(
             status: 'done' as const
           }
         } catch (error) {
+          console.error(`[v0] Frame generation failed:`, error)
           return {
             segmentIndex,
             variantIndex,
