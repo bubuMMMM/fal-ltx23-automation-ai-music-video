@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject } from '@/lib/storage'
-import { generateCharacterImages, getFalApiKey } from '@/lib/fal'
+import { generateCharacterImages, getFalApiKey, configureFal } from '@/lib/fal'
+import { fal } from '@fal-ai/client'
+import fs from 'fs/promises'
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,14 +33,25 @@ export async function POST(request: NextRequest) {
     })
     
     try {
-      // Build reference image URLs from stored files
+      // Upload reference images to fal storage if they exist
       const referenceImageUrls: string[] = []
-      if (project.referenceImageUrls && project.referenceImageUrls.length > 0) {
-        // Convert local URLs to full URLs for fal.ai
-        for (const localUrl of project.referenceImageUrls) {
-          // If it's a local path, we need to upload it to fal storage first
-          const fullUrl = `${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000'}${localUrl}`
-          referenceImageUrls.push(fullUrl)
+      if (project.referenceImages && project.referenceImages.length > 0) {
+        configureFal(apiKey)
+        
+        for (const imagePath of project.referenceImages) {
+          try {
+            // Read the local file and upload to fal storage
+            const fileBuffer = await fs.readFile(imagePath)
+            const ext = imagePath.split('.').pop() || 'png'
+            const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
+            const blob = new Blob([fileBuffer], { type: mimeType })
+            const file = new File([blob], `reference.${ext}`, { type: mimeType })
+            
+            const uploadedUrl = await fal.storage.upload(file)
+            referenceImageUrls.push(uploadedUrl)
+          } catch (uploadError) {
+            console.error('Failed to upload reference image:', uploadError)
+          }
         }
       }
       

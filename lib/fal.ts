@@ -63,13 +63,10 @@ export async function generateCharacterImages(
       const result = await fal.subscribe('fal-ai/nano-banana-2/edit', {
         input: {
           prompt: fullPrompt,
-          image_urls: referenceImageUrls,
+          image_url: referenceImageUrls[0], // nano-banana-2/edit takes single image_url
           num_images: 1,
           output_format: "png",
-          resolution: "1K",
-          aspect_ratio: "1:1",
-          safety_tolerance: "4",
-          limit_generations: true
+          aspect_ratio: "1:1"
         }
       }) as { data: NanoBanana2Result }
       
@@ -81,9 +78,7 @@ export async function generateCharacterImages(
           prompt: fullPrompt,
           num_images: 1,
           output_format: "png",
-          resolution: "1K",
-          aspect_ratio: "1:1",
-          safety_tolerance: "4"
+          aspect_ratio: "1:1"
         }
       }) as { data: NanoBanana2Result }
       
@@ -99,26 +94,19 @@ export async function generateFrame(
   apiKey: string,
   characterImageUrl: string,
   scene: string,
-  style: string,
-  additionalReferenceUrls: string[] = []
+  style: string
 ): Promise<string> {
   configureFal(apiKey)
   
   const prompt = `Place this exact character into a fun scene. ${scene}. ${style}, character face clearly visible and expressive, 16:9 widescreen.`
   
-  // Combine character image with any additional reference images
-  const imageUrls = [characterImageUrl, ...additionalReferenceUrls].slice(0, 2) // nano-banana-2 supports up to 2 images
-  
   const result = await fal.subscribe('fal-ai/nano-banana-2/edit', {
     input: {
-      image_urls: imageUrls,
+      image_url: characterImageUrl,
       prompt,
       num_images: 1,
       output_format: "png",
-      resolution: "1K",
-      aspect_ratio: "16:9",
-      safety_tolerance: "4",
-      limit_generations: true
+      aspect_ratio: "16:9"
     }
   }) as { data: NanoBanana2Result }
   
